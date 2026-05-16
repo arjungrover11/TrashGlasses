@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TrashGlasses — Municipal Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; }
+        #header {
+            background: #2c3e50; color: white;
+            padding: 16px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        #header h1 { font-size: 20px; }
+        #stats {
+            display: flex; gap: 16px;
+            padding: 16px 24px;
+            background: white; border-bottom: 1px solid #ddd;
+        }
+        .stat {
+            background: #f8f9fa; border-radius: 8px;
+            padding: 12px 20px; text-align: center;
+        }
+        .stat-number { font-size: 28px; font-weight: bold; color: #e74c3c; }
+        .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+        #map { height: calc(100vh - 160px); }
+        .report-popup { font-size: 13px; line-height: 1.8; }
+        .report-popup b { color: #e74c3c; }
+    </style>
+</head>
+<body>
+<div id="header">
+    <h1>🗑️ TrashGlasses — Municipal Dashboard</h1>
+    <span id="last-update" style="font-size:13px;opacity:0.7">Live</span>
+</div>
+<div id="stats">
+    <div class="stat">
+        <div class="stat-number" id="total-count">0</div>
+        <div class="stat-label">Total Reports</div>
+    </div>
+    <div class="stat">
+        <div class="stat-number" id="today-count">0</div>
+        <div class="stat-label">Today</div>
+    </div>
+    <div class="stat">
+        <div class="stat-number" id="pending-count">0</div>
+        <div class="stat-label">Pending Cleanup</div>
+    </div>
+</div>
+<div id="map"></div>
+<script>
+    const map = L.map('map').setView([26.8467, 80.9462], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const trashIcon = L.divIcon({
+        html: '🗑️',
+        iconSize: [30, 30],
+        className: 'trash-icon'
+    });
+
+    let markers = [];
+
+    function loadReports() {
+        fetch('/reports')
+        .then(r => r.json())
+        .then(reports => {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            reports.forEach(r => {
+                const marker = L.marker([r.lat, r.lon], {icon: trashIcon})
+                    .addTo(map)
+                    .bindPopup(`
+                        <div class="report-popup">
+                            <b>🗑️ Trash Detected</b><br>
+                            Report #${r.id}<br>
+                            Time: ${r.time}<br>
+                            Confidence: ${(r.confidence * 100).toFixed(0)}%<br>
+                            Location: ${r.lat.toFixed(5)}, ${r.lon.toFixed(5)}
+                        </div>
+                    `);
+                markers.push(marker);
+            });
+            document.getElementById('total-count').textContent = reports.length;
+            document.getElementById('today-count').textContent = reports.length;
+            document.getElementById('pending-count').textContent = reports.length;
+            document.getElementById('last-update').textContent =
+                'Updated: ' + new Date().toLocaleTimeString();
+        });
+    }
+
+    loadReports();
+    setInterval(loadReports, 10000);
+</script>
+</body>
+</html>
