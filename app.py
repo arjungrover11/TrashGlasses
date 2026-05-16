@@ -8,9 +8,9 @@ app = Flask(__name__)
 reports = []
 
 # Configure your email here
-SENDER_EMAIL = "trashgoggles@gmail.com"
-SENDER_PASSWORD = "cvhs gigo yzra wcgz"
-MUNICIPALITY_EMAIL = "a4arjungrover@gmail.com"
+SENDER_EMAIL = "your.gmail@gmail.com"
+SENDER_PASSWORD = "your_app_password"
+MUNICIPALITY_EMAIL = "your.gmail@gmail.com"
 
 def send_municipality_email(report):
     try:
