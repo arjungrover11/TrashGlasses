@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ##### **Trash Glasses:** An AI-powered wearable trash detection system that detects trash in real time using computer vision and automatically reports incidents to a municipal dashboard.
 
 ##### 
@@ -86,3 +87,7 @@
 
 ##### LinkedIn: www.linkedin.com/in/arjun-grover-a300172b7
 
+=======
+# TrashGlasses
+AI-powered wearable trash detection system with municipal reporting
+>>>>>>> 5d46f77a1ea849241a35fdd2ae26b977915abded
