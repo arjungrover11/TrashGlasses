@@ -12,7 +12,7 @@ def get_location():
         lat, lon = data['loc'].split(',')
         return float(lat), float(lon)
     except:
-        return 26.8467, 80.9462  # fallback to Lucknow
+        return 26.8467, 80.9462
 
 # Load model
 interpreter = tf.lite.Interpreter(
@@ -23,7 +23,7 @@ input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 print("Model loaded!")
 
-def detect_trash(frame, confidence_threshold=0.40):
+def detect_trash(frame, confidence_threshold=0.45):
     img = cv2.resize(frame, (320, 320))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img.astype(np.float32) / 255.0
@@ -41,14 +41,16 @@ def detect_trash(frame, confidence_threshold=0.40):
             cy = float(det[1]) / 320
             w = float(det[2]) / 320
             h = float(det[3]) / 320
-            boxes.append([cx - w/2, cy - h/2, w, h])
-            confidences.append(confidence)
+            # Ignore tiny boxes — likely false detections
+            if w > 0.05 and h > 0.05:
+                boxes.append([cx - w/2, cy - h/2, w, h])
+                confidences.append(confidence)
 
     if boxes:
         indices = cv2.dnn.NMSBoxes(
             boxes, confidences,
-            score_threshold=0.40,
-            nms_threshold=0.4
+            score_threshold=0.45,
+            nms_threshold=0.3
         )
         final = []
         for i in indices:
@@ -78,7 +80,7 @@ while True:
         detection_history.pop(0)
     detections = raw if sum(detection_history) >= 3 else []
 
-    # Send report to dashboard max once every 10 seconds
+    # Send report max once every 10 seconds
     if detections:
         current_time = time.time()
         if current_time - last_report_time > 10:
